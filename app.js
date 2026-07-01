@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { getDashboardSummary } from '../services/DashboardService';
-import { formatIDR } from '../utils/currencyUtils';
+import { getDashboardSummary } from './src/services/DashboardService';
+import { formatIDR } from './src/utils/currencyUtils';
 
 export default function App() {
-  // Kita tambahkan <any> di sini supaya TypeScript tidak mengira isinya selamanya null
-  const [summary, setSummary] = useState<any>(null);
+  const [summary, setSummary] = useState(null);
 
   useEffect(() => {
     const jalaninTes = async () => {
-      const hasil: any = await getDashboardSummary(); // Ditambah :any juga biar aman
+      const hasil = await getDashboardSummary();
       console.log("=== HASIL TES DASHBOARD ===");
       console.log(JSON.stringify(hasil, null, 2));
       
@@ -32,8 +31,8 @@ export default function App() {
             Total Pengeluaran: {formatIDR(summary.totalMonthlyExpense)}
           </Text>
           <Text style={{marginTop: 10, fontWeight: 'bold'}}>Breakdown Kategori:</Text>
-          <Text>• Hiburan: {formatIDR(summary.categoryBreakdown?.Hiburan || 0)}</Text>
-          <Text>• Produktivitas: {formatIDR(summary.categoryBreakdown?.Produktivitas || 0)}</Text>
+          <Text>• Hiburan: {formatIDR(summary.categoryBreakdown.Hiburan || 0)}</Text>
+          <Text>• Produktivitas: {formatIDR(summary.categoryBreakdown.Produktivitas || 0)}</Text>
         </View>
       ) : (
         <Text>Menghitung data...</Text>
