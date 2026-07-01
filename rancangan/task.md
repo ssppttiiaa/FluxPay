@@ -1,0 +1,3 @@
+- `[ ]` Delete `node_modules` and `package-lock.json`
+- `[ ]` Install `expo@~54.0.8`
+- `[ ]` Run `npx expo install --fix` to align dependencies
