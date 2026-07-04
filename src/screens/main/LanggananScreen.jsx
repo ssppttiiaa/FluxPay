@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
+  Text,
+  ActivityIndicator,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { SafeAreaView as SafeArea } from 'react-native-safe-area-context';
 
@@ -17,10 +21,38 @@ import FloatingActionButton from '../../components/organisms/FloatingActionButto
 import { colors } from '../../constants/colors';
 import { spacing } from '../../constants/spacing';
 
-export default function LanggananScreen({ navigation }) {
+const STORAGE_KEY = '@subscriptions';
 
+export default function LanggananScreen({ navigation }) {
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadSubscriptions = async () => {
+    try {
+      setLoading(true);
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      const data = stored ? JSON.parse(stored) : [];
+      setSubscriptions(data);
+    } catch (error) {
+      console.error('Gagal memuat data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadSubscriptions();
+    }, [])
+  );
+
+  const filteredData = subscriptions.filter((item) => {
+    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
+    const matchCategory = selectedCategory === 'Semua' || item.category === selectedCategory;
+    return matchSearch && matchCategory;
+  });
 
   const categories = [
     'Semua',
@@ -32,12 +64,10 @@ export default function LanggananScreen({ navigation }) {
 
   return (
     <SafeArea style={styles.container} edges={['top']}>
-
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
-
         <SubscriptionHeader />
 
         <SearchBar
@@ -50,7 +80,6 @@ export default function LanggananScreen({ navigation }) {
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.categoryContainer}
         >
-
           {categories.map((item) => (
             <View key={item} style={styles.chip}>
               <CategoryChip
@@ -60,70 +89,64 @@ export default function LanggananScreen({ navigation }) {
               />
             </View>
           ))}
-
         </ScrollView>
 
-        <SubscriptionListCard
-          logo="🎬"
-          name="Netflix Premium"
-          category="HIBURAN"
-          dueDate="28 Oktober 2026"
-          price="Rp186.000"
-        />
-
-        <SubscriptionListCard
-          logo="🎵"
-          name="Spotify Premium"
-          category="HIBURAN"
-          dueDate="02 November 2026"
-          price="Rp54.990"
-        />
-
-        <SubscriptionListCard
-          logo="☁️"
-          name="Google One"
-          category="TOOLS"
-          dueDate="10 November 2026"
-          price="Rp26.900"
-        />
-
-        <SubscriptionListCard
-          logo="🎨"
-          name="Canva Pro"
-          category="PRODUKTIVITAS"
-          dueDate="15 November 2026"
-          price="Rp95.000"
-        />
-
+        {loading ? (
+          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+        ) : filteredData.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Belum ada langganan.</Text>
+            <Text style={styles.emptySubText}>Tambahkan dengan tombol + di bawah.</Text>
+          </View>
+        ) : (
+          filteredData.map((item) => (
+            <SubscriptionListCard
+              key={item.id}
+              logo="📦"
+              name={item.name}
+              category={item.category}
+              dueDate={item.dueDate}
+              price={item.price}
+              onPress={() => navigation.navigate('KelolaLangganan', { subscriptionId: item.id })}
+            />
+          ))
+        )}
       </ScrollView>
 
       <FloatingActionButton
         onPress={() => navigation.navigate('TambahLangganan')}
       />
-
     </SafeArea>
   );
 }
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
     backgroundColor: colors.background,
   },
-
   content: {
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
     paddingBottom: 100,
   },
-
   categoryContainer: {
     paddingBottom: spacing.md,
   },
-
   chip: {
     marginRight: spacing.sm,
   },
-
+  emptyContainer: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#666',
+  },
+  emptySubText: {
+    marginTop: 8,
+    color: '#999',
+  },
 });

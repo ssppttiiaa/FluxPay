@@ -97,7 +97,7 @@ export default function SubscriptionListCard({
                     {price}
                 </CustomText>
 
-                <TouchableOpacity style={styles.manageButton}>
+                <TouchableOpacity style={styles.manageButton} onPress={onPress}>
                     <CustomText
                         variant="caption"
                         color={colors.primary}
