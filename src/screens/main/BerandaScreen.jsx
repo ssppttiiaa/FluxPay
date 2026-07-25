@@ -83,7 +83,7 @@ export default function BerandaScreen({ navigation }) {
           totalSubscription={`${totalSubscription} Layanan`}
         />
 
-        {/* <CategoryAnalysisCard /> */}
+        <CategoryAnalysisCard />
 
         <CustomText variant="h3" style={styles.section}>
           Tagihan Mendatang
