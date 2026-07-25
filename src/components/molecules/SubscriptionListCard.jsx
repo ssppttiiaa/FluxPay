@@ -1,4 +1,4 @@
-// Halaman Langganan
+// CARD LANGGNAN AKTIF YANG ADA DI HALAMAN LANGGANAN
 
 import React from 'react';
 import {

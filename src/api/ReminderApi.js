@@ -2,8 +2,16 @@ import NotificationService from "../services/NotificationService";
 
 class ReminderAPI {
 
-  async checkReminder() {
-    return await NotificationService.checkReminders();
+  async getReminders() {
+    return await NotificationService.getReminders();
+  }
+
+  async getExpired() {
+    return await NotificationService.getExpiredSubscriptions();
+  }
+
+  async getTodayCount() {
+    return await NotificationService.getTodayReminderCount();
   }
 
 }

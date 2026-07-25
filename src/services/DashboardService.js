@@ -4,58 +4,94 @@ class DashboardService {
 
   // Total subscription aktif
   async getTotalActiveSubscription() {
-    const subscriptions = await SubscriptionRepository.getAllActive();
+
+    const subscriptions =
+      await SubscriptionRepository.getAllActive();
+
     return subscriptions.length;
+
   }
 
-  // Total pengeluaran per bulan
+  // Total pengeluaran bulanan
   async getMonthlyExpense() {
-    const subscriptions = await SubscriptionRepository.getAllActive();
+
+    const subscriptions =
+      await SubscriptionRepository.getAllActive();
 
     let total = 0;
 
     subscriptions.forEach(item => {
-      total += item.price;
+
+      total += Number(item.price);
+
     });
 
     return total;
+
   }
 
-  // Subscription yang akan datang
+  // Tagihan mendatang
   async getUpcomingPayments(limit = 5) {
-    const subscriptions = await SubscriptionRepository.getAllActive();
 
-    subscriptions.sort((a, b) => {
-      return new Date(a.next_payment_date) - new Date(b.next_payment_date);
-    });
+    const subscriptions =
+      await SubscriptionRepository.getAllActive();
+
+    subscriptions.sort((a, b) =>
+
+      new Date(a.next_payment_date) -
+      new Date(b.next_payment_date)
+
+    );
 
     return subscriptions.slice(0, limit);
+
   }
 
   // Ringkasan kategori
   async getCategorySummary() {
 
-    const subscriptions = await SubscriptionRepository.getAllActive();
+    const subscriptions =
+      await SubscriptionRepository.getAllActive();
 
-    const result = {};
+    const summary = {};
+
+    let grandTotal = 0;
 
     subscriptions.forEach(item => {
 
-      if (!result[item.category]) {
+      grandTotal += Number(item.price);
 
-        result[item.category] = {
+      if (!summary[item.category]) {
+
+        summary[item.category] = {
+
+          category: item.category,
           total: 0,
-          count: 0
+          count: 0,
+          percentage: 0,
+
         };
 
       }
 
-      result[item.category].total += item.price;
-      result[item.category].count++;
+      summary[item.category].total += Number(item.price);
+
+      summary[item.category].count++;
 
     });
 
-    return result;
+    Object.keys(summary).forEach(key => {
+
+      summary[key].percentage = grandTotal === 0
+        ? 0
+        : Math.round(
+          (summary[key].total / grandTotal) * 100
+        );
+
+    });
+
+    return Object.values(summary);
+
   }
 
 }

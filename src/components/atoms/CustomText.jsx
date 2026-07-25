@@ -3,7 +3,6 @@ import { Text, StyleSheet } from 'react-native';
 
 import { colors } from '../../constants/colors';
 import { typography } from '../../constants/typography';
-console.log('Typography =', typography);
 
 // Variants: h1, h2, h3, body, caption, button
 export default function CustomText({

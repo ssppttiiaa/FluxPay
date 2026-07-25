@@ -18,6 +18,10 @@ class AuthAPI {
     return await AuthService.getCurrentUser();
   }
 
+  async isLogin() {
+    return await AuthService.isLogin();
+  }
+
 }
 
 export default new AuthAPI();

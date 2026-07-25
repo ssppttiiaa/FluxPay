@@ -1,42 +1,56 @@
-import React, { useState, useCallback } from 'react';
+// HALAMAN LANGGANAN
+
+
+import React, { useState, useCallback } from "react";
 import {
-  SafeAreaView,
   StyleSheet,
   ScrollView,
   View,
   Text,
   ActivityIndicator,
-} from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+} from "react-native";
 
-import { SafeAreaView as SafeArea } from 'react-native-safe-area-context';
+import { useFocusEffect } from "@react-navigation/native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-import SubscriptionHeader from '../../components/organisms/SubscriptionHeader';
-import SearchBar from '../../components/molecules/SearchBar';
-import CategoryChip from '../../components/atoms/CategoryChip';
-import SubscriptionListCard from '../../components/molecules/SubscriptionListCard';
-import FloatingActionButton from '../../components/organisms/FloatingActionButton';
+import SubscriptionHeader from "../../components/organisms/SubscriptionHeader";
+import SearchBar from "../../components/molecules/SearchBar";
+import CategoryChip from "../../components/atoms/CategoryChip";
+import SubscriptionListCard from "../../components/molecules/SubscriptionListCard";
+import FloatingActionButton from "../../components/organisms/FloatingActionButton";
 
-import { colors } from '../../constants/colors';
-import { spacing } from '../../constants/spacing';
+import SubscriptionApi from "../../api/SubscriptionApi";
 
-const STORAGE_KEY = '@subscriptions';
+import { colors } from "../../constants/colors";
+import { spacing } from "../../constants/spacing";
 
 export default function LanggananScreen({ navigation }) {
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('Semua');
+  const [search, setSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Semua");
+
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const loadSubscriptions = async () => {
     try {
       setLoading(true);
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      const data = stored ? JSON.parse(stored) : [];
-      setSubscriptions(data);
+
+      // const data = await SubscriptionApi.getAll();
+
+      // console.log("===== GET ALL =====");
+      // console.log(data);
+
+      // setSubscriptions(data);
+
+      const data = await SubscriptionApi.getAll();
+
+      console.log("===== GET ALL =====");
+      console.log(JSON.stringify(data, null, 2));
+
+      setSubscriptions(data || []);
+
     } catch (error) {
-      console.error('Gagal memuat data:', error);
+      console.log(error);
     } finally {
       setLoading(false);
     }
@@ -45,35 +59,38 @@ export default function LanggananScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       loadSubscriptions();
-    }, [])
+    }, []),
   );
 
   const filteredData = subscriptions.filter((item) => {
-    const matchSearch = item.name.toLowerCase().includes(search.toLowerCase());
-    const matchCategory = selectedCategory === 'Semua' || item.category === selectedCategory;
+    const matchSearch = item.name
+      .trim()
+      .toLowerCase()
+      .includes(search.trim().toLowerCase());
+
+    const matchCategory =
+      selectedCategory === "Semua" ||
+      item.category.trim().toUpperCase() ===
+      selectedCategory.trim().toUpperCase();
+
     return matchSearch && matchCategory;
   });
 
-  const categories = [
-    'Semua',
-    'HIBURAN',
-    'TOOLS',
-    'KERJA',
-    'PRODUKTIVITAS',
-  ];
+  const categories = ["Semua", "HIBURAN", "TOOLS", "KERJA", "PRODUKTIVITAS"];
+
+  console.log("Subscriptions :", subscriptions);
+  console.log("Selected Category :", selectedCategory);
+  console.log("Filtered :", filteredData);
 
   return (
-    <SafeArea style={styles.container} edges={['top']}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
       >
         <SubscriptionHeader />
 
-        <SearchBar
-          value={search}
-          onChangeText={setSearch}
-        />
+        <SearchBar value={search} onChangeText={setSearch} />
 
         <ScrollView
           horizontal
@@ -92,11 +109,18 @@ export default function LanggananScreen({ navigation }) {
         </ScrollView>
 
         {loading ? (
-          <ActivityIndicator size="large" color={colors.primary} style={{ marginTop: 20 }} />
+          <ActivityIndicator
+            size="large"
+            color={colors.primary}
+            style={{ marginTop: 40 }}
+          />
         ) : filteredData.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>Belum ada langganan.</Text>
-            <Text style={styles.emptySubText}>Tambahkan dengan tombol + di bawah.</Text>
+            <Text style={styles.emptyText}>Belum ada langganan</Text>
+
+            <Text style={styles.emptySubText}>
+              Tambahkan langganan dengan tombol +
+            </Text>
           </View>
         ) : (
           filteredData.map((item) => (
@@ -105,18 +129,22 @@ export default function LanggananScreen({ navigation }) {
               logo="📦"
               name={item.name}
               category={item.category}
-              dueDate={item.dueDate}
-              price={item.price}
-              onPress={() => navigation.navigate('KelolaLangganan', { subscriptionId: item.id })}
+              dueDate={item.next_payment_date}
+              price={`Rp ${item.price}`}
+              onPress={() =>
+                navigation.navigate("KelolaLangganan", {
+                  subscriptionId: item.id,
+                })
+              }
             />
           ))
         )}
       </ScrollView>
 
       <FloatingActionButton
-        onPress={() => navigation.navigate('TambahLangganan')}
+        onPress={() => navigation.navigate("TambahLangganan")}
       />
-    </SafeArea>
+    </SafeAreaView>
   );
 }
 
@@ -125,28 +153,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+
   content: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
     paddingBottom: 100,
   },
+
   categoryContainer: {
-    paddingBottom: spacing.md,
+    paddingVertical: spacing.sm,
+    marginBottom: spacing.md,
   },
+
   chip: {
     marginRight: spacing.sm,
   },
+
   emptyContainer: {
-    marginTop: 40,
-    alignItems: 'center',
+    marginTop: 60,
+    alignItems: "center",
+    justifyContent: "center",
   },
+
   emptyText: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#666',
+    fontWeight: "600",
+    color: colors.textPrimary,
+    marginBottom: 8,
   },
+
   emptySubText: {
-    marginTop: 8,
-    color: '#999',
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: "center",
   },
 });

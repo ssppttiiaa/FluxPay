@@ -1,3 +1,5 @@
+import { Alert } from "react-native";
+import AuthAPI from "../../api/AuthApi";
 import React, { useState } from 'react';
 import {
   View,
@@ -22,8 +24,58 @@ export default function RegisterScreen({ navigation }) {
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
 
-  const handleRegister = () => {
-    navigation.navigate('Login');
+  const handleRegister = async () => {
+
+    if (!name || !email || !pin || !confirmPin) {
+      Alert.alert(
+        "Peringatan",
+        "Semua field wajib diisi."
+      );
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      Alert.alert(
+        "Peringatan",
+        "Konfirmasi password tidak sama."
+      );
+      return;
+    }
+
+    try {
+
+      await AuthAPI.register({
+
+        full_name: name,
+
+        email: email,
+
+        password: pin,
+
+        phone: "",
+
+      });
+
+      Alert.alert(
+        "Berhasil",
+        "Akun berhasil dibuat.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("Login"),
+          },
+        ]
+      );
+
+    } catch (error) {
+
+      Alert.alert(
+        "Error",
+        error.message
+      );
+
+    }
+
   };
 
   return (

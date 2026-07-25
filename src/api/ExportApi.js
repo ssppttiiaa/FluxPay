@@ -1,11 +1,9 @@
 import ExportService from "../services/ExportService";
 
-class ExportAPI {
-
-  async exportCSV() {
-    return await ExportService.exportCSV();
+class ExportApi {
+  async exportPDF() {
+    return await ExportService.exportPDF();
   }
-
 }
 
-export default new ExportAPI();
+export default new ExportApi();

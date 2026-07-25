@@ -1,21 +1,40 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const USER_KEY = "@current_user";
+
 class SessionService {
 
-  currentUser = null;
+  async setCurrentUser(user) {
 
-  setCurrentUser(user) {
-    this.currentUser = user;
+    await AsyncStorage.setItem(
+      USER_KEY,
+      JSON.stringify(user)
+    );
+
   }
 
-  getCurrentUser() {
-    return this.currentUser;
+  async getCurrentUser() {
+
+    const data = await AsyncStorage.getItem(USER_KEY);
+
+    if (!data) return null;
+
+    return JSON.parse(data);
+
   }
 
-  isLogin() {
-    return this.currentUser !== null;
+  async isLogin() {
+
+    const user = await this.getCurrentUser();
+
+    return user !== null;
+
   }
 
-  clearSession() {
-    this.currentUser = null;
+  async clearSession() {
+
+    await AsyncStorage.removeItem(USER_KEY);
+
   }
 
 }

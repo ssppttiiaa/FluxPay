@@ -1,13 +1,13 @@
-import UserRepository from "../repositories/UserRepository";
+import UserService from "../services/UserService";
 
 class UserAPI {
 
   async profile(id) {
-    return await UserRepository.getById(id);
+    return await UserService.profile(id);
   }
 
   async update(user) {
-    return await UserRepository.update(user);
+    return await UserService.update(user);
   }
 
 }

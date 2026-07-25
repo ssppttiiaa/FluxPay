@@ -1,17 +1,46 @@
-import React from 'react';
+import React, { useState, useCallback } from "react";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from "@react-navigation/native";
 
 import BerandaScreen from '../screens/main/BerandaScreen';
 import LanggananScreen from '../screens/main/LanggananScreen';
 import NotifikasiScreen from '../screens/main/NotifikasiScreen';
 import ProfilScreen from '../screens/main/ProfilScreen';
+import ReminderAPI from "../api/ReminderApi";
 
 import { colors } from '../constants/colors';
 
 const Tab = createBottomTabNavigator();
 
 export default function MainTabNavigator() {
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useFocusEffect(
+    useCallback(() => {
+
+      const loadReminder = async () => {
+
+        try {
+
+          const count =
+            await ReminderAPI.getTodayCount();
+
+          setNotificationCount(count);
+
+        } catch (error) {
+
+          console.log(error);
+
+        }
+
+      };
+
+      loadReminder();
+
+    }, [])
+  );
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -85,6 +114,12 @@ export default function MainTabNavigator() {
       <Tab.Screen
         name="Notifikasi"
         component={NotifikasiScreen}
+        options={{
+          tabBarBadge:
+            notificationCount > 0
+              ? notificationCount
+              : undefined,
+        }}
       />
 
       <Tab.Screen
@@ -94,3 +129,4 @@ export default function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
+

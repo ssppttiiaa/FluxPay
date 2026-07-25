@@ -6,21 +6,72 @@ import {
   KeyboardAvoidingView,
   Platform,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 
 import CustomText from '../../components/atoms/CustomText';
 import CustomInput from '../../components/atoms/CustomInput';
 import CustomButton from '../../components/atoms/CustomButton';
 
+import AuthAPI from '../../api/AuthApi';
+
 import { colors } from '../../constants/colors';
 import { spacing } from '../../constants/spacing';
 
 export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [pin, setPin] = useState('');
 
-  const handleLogin = () => {
-    navigation.navigate('MainTabs');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleLogin = async () => {
+
+    if (!email || !password) {
+      Alert.alert(
+        "Peringatan",
+        "Email dan Password wajib diisi."
+      );
+      return;
+    }
+
+    try {
+
+      const user = await AuthAPI.login(email, password);
+
+      console.log("LOGIN SUCCESS :", user);
+
+      navigation.reset({
+        index: 0,
+        routes: [
+          {
+            name: "MainApp",
+          },
+        ],
+      });
+
+    } catch (error) {
+
+      Alert.alert(
+        "Login Gagal",
+        error.message
+      );
+
+    }
+
+  };
+
+  const handleLogout = async () => {
+
+    await AuthAPI.logout();
+
+    navigation.reset({
+      index: 0,
+      routes: [
+        {
+          name: "Auth",
+        },
+      ],
+    });
+
   };
 
   return (
@@ -47,6 +98,7 @@ export default function LoginScreen({ navigation }) {
 
           {/* Form */}
           <View style={styles.formContainer}>
+
             <CustomInput
               label="Email"
               placeholder="Masukkan email"
@@ -55,10 +107,10 @@ export default function LoginScreen({ navigation }) {
             />
 
             <CustomInput
-              label="PIN"
-              placeholder="Masukkan PIN"
-              value={pin}
-              onChangeText={setPin}
+              label="Password"
+              placeholder="Masukkan Password"
+              value={password}
+              onChangeText={setPassword}
               isPassword
             />
 
@@ -66,17 +118,19 @@ export default function LoginScreen({ navigation }) {
               title="Masuk"
               onPress={handleLogin}
             />
+
           </View>
 
           {/* Register */}
           <View style={styles.footer}>
+
             <CustomText variant="body">
               Belum punya akun?
             </CustomText>
 
             <TouchableOpacity
               onPress={() =>
-                navigation.navigate('Register')
+                navigation.navigate("Register")
               }
             >
               <CustomText
@@ -86,6 +140,7 @@ export default function LoginScreen({ navigation }) {
                 Daftar
               </CustomText>
             </TouchableOpacity>
+
           </View>
 
         </View>
@@ -95,6 +150,7 @@ export default function LoginScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: colors.background,
@@ -135,4 +191,5 @@ const styles = StyleSheet.create({
     color: colors.primary,
     marginLeft: spacing.xs,
   },
+
 });

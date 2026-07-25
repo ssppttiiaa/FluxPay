@@ -1,98 +1,128 @@
-import React from 'react';
-import {
-  ScrollView,
-  View,
-  StyleSheet,
-} from 'react-native';
+// HALAMAN DASBOARD
 
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useCallback } from "react";
+import { ScrollView, StyleSheet } from "react-native";
 
-import CustomText from '../../components/atoms/CustomText';
-import SummaryCard from '../../components/molecules/SummaryCard';
-import SubscriptionCard from '../../components/molecules/SubscriptionCard';
-import FloatingActionButton from '../../components/organisms/FloatingActionButton';
-import HomeHeader from '../../components/organisms/HomeHeader';
-import CategoryAnalysisCard from '../../components/molecules/CategoryAnalysisCard';
-import UpcomingPaymentCard from '../../components/molecules/UpcomingPaymentCard';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
 
-import { colors } from '../../constants/colors';
-import { spacing } from '../../constants/spacing';
+import CustomText from "../../components/atoms/CustomText";
+import SummaryCard from "../../components/molecules/SummaryCard";
+import SubscriptionCard from "../../components/molecules/SubscriptionCard";
+import FloatingActionButton from "../../components/organisms/FloatingActionButton";
+import HomeHeader from "../../components/organisms/HomeHeader";
+import CategoryAnalysisCard from "../../components/molecules/CategoryAnalysisCard";
+import UpcomingPaymentCard from "../../components/molecules/UpcomingPaymentCard";
+
+import SubscriptionApi from "../../api/SubscriptionApi";
+import DashboardApi from "../../api/DashboardApi";
+
+import { colors } from "../../constants/colors";
+import { spacing } from "../../constants/spacing";
 
 export default function BerandaScreen({ navigation }) {
-  return (
-    <SafeAreaView
-      style={styles.container}
-      edges={['top']}
-    >
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [upcoming, setUpcoming] = useState([]);
 
+  const [totalMonthly, setTotalMonthly] = useState(0);
+  const [totalSubscription, setTotalSubscription] = useState(0);
+
+  const loadData = async () => {
+    try {
+      console.log("LOAD 1");
+
+      const subscriptionsData = await SubscriptionApi.getActive();
+
+      console.log("LOAD 2");
+
+      const upcomingData = await DashboardApi.getUpcomingPayments();
+
+      console.log("LOAD 3");
+
+      const monthlyExpense = await DashboardApi.getMonthlyExpense();
+
+      console.log("LOAD 4");
+
+      const activeSubscription =
+        await DashboardApi.getTotalActiveSubscription();
+
+      console.log("LOAD 5");
+
+      setSubscriptions(subscriptionsData);
+      setUpcoming(upcomingData);
+      setTotalMonthly(monthlyExpense);
+      setTotalSubscription(activeSubscription);
+
+      console.log("LOAD 6");
+    } catch (error) {
+      console.log("LOAD DATA ERROR");
+      console.log(error);
+    }
+  };
+
+  // const loadData = async () => {
+  //   console.log("===== LOAD DATA BERANDA =====");
+  // };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, []),
+  );
+
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-
-        <HomeHeader />
+        <HomeHeader navigation={navigation} />
 
         <SummaryCard
-          total="Rp329.000"
-          totalSubscription="12 Layanan"
+          total={`Rp${Number(totalMonthly).toLocaleString("id-ID")}`}
+          totalSubscription={`${totalSubscription} Layanan`}
         />
 
-        <CategoryAnalysisCard />
+        {/* <CategoryAnalysisCard /> */}
 
-        <CustomText
-          variant="h3"
-          style={styles.section}
-        >
+        <CustomText variant="h3" style={styles.section}>
           Tagihan Mendatang
         </CustomText>
 
-        <UpcomingPaymentCard
-          service="Netflix Premium"
-          dueDate="28 Oktober 2026"
-          amount="Rp186.000"
-        />
+        {upcoming.length > 0 && (
+          <UpcomingPaymentCard
+            service={upcoming[0].name}
+            dueDate={upcoming[0].next_payment_date}
+            amount={`Rp${Number(upcoming[0].price).toLocaleString("id-ID")}`}
+          />
+        )}
 
-        <CustomText
-          variant="h3"
-          style={styles.section}
-        >
+        <CustomText variant="h3" style={styles.section}>
           Langganan Terbaru
         </CustomText>
 
-        <SubscriptionCard
-          logo="☁️"
-          name="Google One"
-          category="TOOLS"
-          dueDate="05 Nov"
-          price="Rp26.900"
-        />
-
-        <SubscriptionCard
-          logo="🎵"
-          name="Spotify"
-          category="HIBURAN"
-          dueDate="12 Nov"
-          price="Rp54.990"
-        />
-
-        <SubscriptionCard
-          logo="🎨"
-          name="Canva Pro"
-          category="KERJA"
-          dueDate="20 Nov"
-          price="Rp95.000"
-        />
-
+        {subscriptions.slice(0, 3).map((item) => (
+          <SubscriptionCard
+            key={item.id}
+            logo="📦"
+            name={item.name}
+            category={item.category}
+            dueDate={item.next_payment_date}
+            price={`Rp${Number(item.price).toLocaleString("id-ID")}`}
+          />
+        ))}
       </ScrollView>
 
       <FloatingActionButton
-        onPress={() =>
-          navigation.navigate('TambahLangganan')
-        }
+        onPress={() => navigation.navigate("TambahLangganan")}
       />
-
     </SafeAreaView>
+  );
 
+  return (
+    <SafeAreaView style={styles.container}>
+      <CustomText>TES BERHASIL</CustomText>
+    </SafeAreaView>
   );
 }
 
@@ -106,10 +136,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.lg,
     paddingBottom: 100,
-  },
-
-  subtitle: {
-    marginBottom: spacing.lg,
   },
 
   section: {

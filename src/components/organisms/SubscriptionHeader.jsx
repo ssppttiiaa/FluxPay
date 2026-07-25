@@ -1,5 +1,4 @@
-// Header halaman langganan saya
-
+// HEADER DI HALAMAN LANGGNAN
 
 import React from 'react';
 import {
@@ -20,14 +19,6 @@ export default function SubscriptionHeader() {
     return (
         <View style={styles.container}>
 
-            <TouchableOpacity style={styles.iconButton}>
-                <Ionicons
-                    name="menu-outline"
-                    size={28}
-                    color={colors.primary}
-                />
-            </TouchableOpacity>
-
             <View style={styles.titleContainer}>
                 <CustomText variant="h2"
                     color={colors.primary}
@@ -43,16 +34,6 @@ export default function SubscriptionHeader() {
                     Kelola semua langgananmu
                 </CustomText>
             </View>
-
-            <TouchableOpacity style={styles.iconButton}>
-                <Ionicons
-                    name="search-outline"
-                    size={24}
-                    color={colors.primary}
-                />
-            </TouchableOpacity>
-
-
         </View>
     );
 }

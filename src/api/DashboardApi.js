@@ -1,23 +1,23 @@
 import DashboardService from "../services/DashboardService";
 
-class DashboardAPI {
+class DashboardApi {
 
-  async monthlyExpense() {
+  async getMonthlyExpense() {
     return await DashboardService.getMonthlyExpense();
   }
 
-  async totalActive() {
+  async getTotalActiveSubscription() {
     return await DashboardService.getTotalActiveSubscription();
   }
 
-  async upcomingPayments() {
-    return await DashboardService.getUpcomingPayments();
+  async getUpcomingPayments(limit = 5) {
+    return await DashboardService.getUpcomingPayments(limit);
   }
 
-  async categorySummary() {
+  async getCategorySummary() {
     return await DashboardService.getCategorySummary();
   }
 
 }
 
-export default new DashboardAPI();
+export default new DashboardApi();

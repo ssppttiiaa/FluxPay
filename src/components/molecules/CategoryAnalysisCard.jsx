@@ -1,103 +1,145 @@
-import React from 'react';
+import React, { useEffect, useState } from "react";
 import {
     View,
     StyleSheet,
-} from 'react-native';
+} from "react-native";
 
-import { PieChart } from 'react-native-gifted-charts';
+import { PieChart } from "react-native-gifted-charts";
 
-import CustomText from '../atoms/CustomText';
+import CustomText from "../atoms/CustomText";
 
-import { colors } from '../../constants/colors';
-import { spacing } from '../../constants/spacing';
-import { radius } from '../../constants/radius';
-import { shadows } from '../../constants/shadows';
+import DashboardApi from "../../api/DashboardApi";
 
-const pieData = [
-    {
-        value: 56,
-        color: '#4F46E5',
-        text: '56%',
-    },
-    {
-        value: 32,
-        color: '#7C6CF6',
-        text: '32%',
-    },
-    {
-        value: 12,
-        color: '#C4B5FD',
-        text: '12%',
-    },
-];
+import { colors } from "../../constants/colors";
+import { spacing } from "../../constants/spacing";
+import { radius } from "../../constants/radius";
+import { shadows } from "../../constants/shadows";
+
+const categoryColors = {
+    HIBURAN: "#4F46E5",
+    PRODUKTIVITAS: "#7C6CF6",
+    TOOLS: "#8B5CF6",
+    KERJA: "#F97316",
+    LAINNYA: "#C4B5FD",
+};
 
 export default function CategoryAnalysisCard() {
+
+    const [pieData, setPieData] = useState([]);
+    const [summary, setSummary] = useState([]);
+
+    useEffect(() => {
+
+        loadCategory();
+
+    }, []);
+
+    const loadCategory = async () => {
+
+        try {
+
+            const result =
+                await DashboardApi.getCategorySummary();
+
+            setSummary(result);
+
+            const chartData = result.map((item) => ({
+
+                value: item.total,
+
+                color:
+                    categoryColors[item.category] ||
+                    categoryColors.LAINNYA,
+
+                text: `${item.percentage}%`,
+
+            }));
+
+            setPieData(chartData);
+
+        } catch (error) {
+
+            console.log(error);
+
+        }
+
+    };
+
     return (
+
         <View style={styles.container}>
 
-            <CustomText variant="h3" style={styles.title}>
+            <CustomText
+                variant="h3"
+                style={styles.title}
+            >
                 Analisis Kategori
             </CustomText>
 
             <View style={styles.chartContainer}>
-                <PieChart
-                    data={pieData}
-                    donut
-                    radius={90}
-                    innerRadius={52}
-                    showText
-                    textColor="white"
-                    textSize={12}
-                    focusOnPress={false}
-                    strokeWidth={0}
-                />
+
+                {
+                    pieData.length > 0 && (
+
+                        <PieChart
+                            data={pieData}
+                            donut
+                            radius={90}
+                            innerRadius={55}
+                            showText
+                            textColor="white"
+                            textSize={12}
+                            focusOnPress={false}
+                            strokeWidth={0}
+                        />
+
+                    )
+                }
+
             </View>
 
             <View style={styles.legendCard}>
 
-                <View style={styles.row}>
-                    <View style={[styles.dot, { backgroundColor: '#4F46E5' }]} />
-                    <CustomText variant="body">
-                        Hiburan
-                    </CustomText>
+                {
+                    summary.map((item) => (
 
-                    <View style={{ flex: 1 }} />
+                        <View
+                            key={item.category}
+                            style={styles.row}
+                        >
 
-                    <CustomText variant="body">
-                        56%
-                    </CustomText>
-                </View>
+                            <View
+                                style={[
+                                    styles.dot,
+                                    {
+                                        backgroundColor:
+                                            categoryColors[item.category] ||
+                                            categoryColors.LAINNYA,
+                                    },
+                                ]}
+                            />
 
-                <View style={styles.row}>
-                    <View style={[styles.dot, { backgroundColor: '#7C6CF6' }]} />
-                    <CustomText variant="body">
-                        Produktivitas
-                    </CustomText>
+                            <CustomText variant="body">
+                                {item.category}
+                            </CustomText>
 
-                    <View style={{ flex: 1 }} />
+                            <View style={{ flex: 1 }} />
 
-                    <CustomText variant="body">
-                        32%
-                    </CustomText>
-                </View>
+                            <CustomText variant="body">
+                                {item.percentage}%
+                            </CustomText>
 
-                <View style={styles.row}>
-                    <View style={[styles.dot, { backgroundColor: '#C4B5FD' }]} />
-                    <CustomText variant="body">
-                        Lainnya
-                    </CustomText>
+                        </View>
 
-                    <View style={{ flex: 1 }} />
-
-                    <CustomText variant="body">
-                        12%
-                    </CustomText>
-                </View>
+                    ))
+                }
 
             </View>
 
         </View>
+
     );
+
 }
 
 const styles = StyleSheet.create({
@@ -108,11 +150,11 @@ const styles = StyleSheet.create({
 
     title: {
         marginBottom: spacing.md,
-        fontWeight: '700',
+        fontWeight: "700",
     },
 
     chartContainer: {
-        alignItems: 'center',
+        alignItems: "center",
         marginBottom: spacing.lg,
     },
 
@@ -124,8 +166,8 @@ const styles = StyleSheet.create({
     },
 
     row: {
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         marginBottom: spacing.md,
     },
 

@@ -1,6 +1,7 @@
 class SubscriptionModel {
   constructor({
     id = null,
+    user_id = null,
     name = "",
     price = 0,
     category = "",
@@ -12,6 +13,7 @@ class SubscriptionModel {
     created_at = "",
   }) {
     this.id = id;
+    this.user_id = user_id;
     this.name = name;
     this.price = price;
     this.category = category;
@@ -29,6 +31,7 @@ class SubscriptionModel {
   toJSON() {
     return {
       id: this.id,
+      user_id: this.user_id,
       name: this.name,
       price: this.price,
       category: this.category,
@@ -49,6 +52,7 @@ class SubscriptionModel {
 
     return new SubscriptionModel({
       id: data.id,
+      user_id: data.user_id,
       name: data.name,
       price: data.price,
       category: data.category,

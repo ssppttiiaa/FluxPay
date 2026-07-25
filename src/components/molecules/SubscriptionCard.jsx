@@ -1,3 +1,6 @@
+// CARD LANGGANAN AKTIF YANG ADA DI HALAMAN DASBOARD (LANGGANAN TERBARU)
+
+
 import React from 'react';
 import {
   View,

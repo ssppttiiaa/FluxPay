@@ -1,3 +1,5 @@
+// CARD TOTAL PENGELUARAN DI HALAMAN DASBOARD
+
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { View, StyleSheet } from 'react-native';

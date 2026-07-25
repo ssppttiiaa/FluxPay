@@ -1,38 +1,43 @@
-import SubscriptionRepository from "../repositories/SubscriptionRepository";
+import SubscriptionService from "../services/SubscriptionService";
 
-class SubscriptionAPI {
+class SubscriptionApi {
 
   async getAll() {
-    return await SubscriptionRepository.getAll();
+    return await SubscriptionService.getAll();
   }
 
   async getById(id) {
-    return await SubscriptionRepository.getById(id);
+    return await SubscriptionService.getById(id);
   }
 
-  async create(data) {
-    return await SubscriptionRepository.create(data);
+  async create(subscription) {
+    return await SubscriptionService.create(subscription);
   }
 
-  async update(data) {
-    return await SubscriptionRepository.update(data);
+  async update(subscription) {
+    return await SubscriptionService.update(subscription);
   }
 
   async delete(id) {
-    return await SubscriptionRepository.delete(id);
+    return await SubscriptionService.delete(id);
   }
 
   async search(keyword) {
-    return await SubscriptionRepository.search(keyword);
+    return await SubscriptionService.search(keyword);
   }
 
   async getActive() {
-    return await SubscriptionRepository.getAllActive();
+    return await SubscriptionService.getActive();
   }
 
   async getInactive() {
-    return await SubscriptionRepository.getInactiveSubscriptions();
+    return await SubscriptionService.getInactive();
+  }
+
+  async getUpcoming() {
+    return await SubscriptionService.getUpcoming();
   }
 
 }
-export default new SubscriptionAPI();
+
+export default new SubscriptionApi();

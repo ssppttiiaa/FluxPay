@@ -17,6 +17,7 @@ export const createTables = async () => {
         email TEXT NOT NULL UNIQUE,
         password TEXT NOT NULL,
         phone TEXT,
+        photo TEXT,
         created_at TEXT NOT NULL
       );
     `);
@@ -71,7 +72,6 @@ export const createTables = async () => {
     `);
 
     console.log("✅ Semua tabel berhasil dibuat");
-
   } catch (error) {
     console.log("❌ Migration Error:", error);
   }
@@ -93,7 +93,6 @@ export const dropTables = async () => {
     `);
 
     console.log("🗑️ Semua tabel berhasil dihapus");
-
   } catch (error) {
     console.log(error);
   }
@@ -108,7 +107,6 @@ export const resetDatabase = async () => {
     await createTables();
 
     console.log("🔄 Database berhasil di-reset");
-
   } catch (error) {
     console.log(error);
   }

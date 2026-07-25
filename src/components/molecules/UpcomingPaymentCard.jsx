@@ -1,3 +1,5 @@
+// CARD TAGIHAN MENDATNAG YANG ADA DI HALAMAN DASBOARD
+
 import React from 'react';
 import {
     View,
@@ -64,18 +66,6 @@ export default function UpcomingPaymentCard({
                 >
                     {amount}
                 </CustomText>
-
-                <TouchableOpacity
-                    style={styles.button}
-                    onPress={onPress}
-                >
-                    <CustomText
-                        variant="caption"
-                        color={colors.surface}
-                    >
-                        Lihat Kalender
-                    </CustomText>
-                </TouchableOpacity>
 
             </View>
 

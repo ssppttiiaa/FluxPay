@@ -1,23 +1,33 @@
 import React from 'react';
-import { TouchableOpacity, ActivityIndicator, StyleSheet } from 'react-native';
+import {
+  TouchableOpacity,
+  ActivityIndicator,
+  StyleSheet,
+  View,
+} from 'react-native';
+
+import { Ionicons } from '@expo/vector-icons';
+
 import CustomText from './CustomText';
+
 import { colors } from '../../constants/colors';
 import { radius } from '../../constants/radius';
 import { spacing } from '../../constants/spacing';
 
-export default function CustomButton({ 
-  title, 
-  onPress, 
-  variant = 'primary', // 'primary' | 'secondary' | 'danger'
+export default function CustomButton({
+  title,
+  onPress,
+  variant = 'primary',
   disabled = false,
   loading = false,
-  style
+  icon = null,
+  style,
 }) {
   const getBackgroundColor = () => {
     if (disabled) return colors.border;
     if (variant === 'secondary') return 'transparent';
     if (variant === 'danger') return colors.error;
-    return colors.primary; // default primary
+    return colors.primary;
   };
 
   const getTextColor = () => {
@@ -32,7 +42,7 @@ export default function CustomButton({
         styles.container,
         { backgroundColor: getBackgroundColor() },
         variant === 'secondary' && styles.outline,
-        style
+        style,
       ]}
       onPress={onPress}
       disabled={disabled || loading}
@@ -41,9 +51,20 @@ export default function CustomButton({
       {loading ? (
         <ActivityIndicator color={getTextColor()} />
       ) : (
-        <CustomText variant="button" color={getTextColor()}>
-          {title}
-        </CustomText>
+        <View style={styles.content}>
+          {icon && (
+            <Ionicons
+              name={icon}
+              size={20}
+              color={getTextColor()}
+              style={styles.icon}
+            />
+          )}
+
+          <CustomText variant="button" color={getTextColor()}>
+            {title}
+          </CustomText>
+        </View>
       )}
     </TouchableOpacity>
   );
@@ -58,8 +79,19 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     width: '100%',
   },
+
+  content: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  icon: {
+    marginRight: spacing.sm,
+  },
+
   outline: {
     borderWidth: 1,
     borderColor: colors.primary,
-  }
+  },
 });

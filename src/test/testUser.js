@@ -62,12 +62,12 @@ export const testUser = async () => {
 
   console.log(SessionService.isLogin());
 
-  AuthService.logout();
+  // AuthService.logout();
 
-  console.log(" ");
+  // console.log(" ");
 
-  console.log("Setelah Logout");
+  // console.log("Setelah Logout");
 
-  console.log(SessionService.isLogin());
+  // console.log(SessionService.isLogin());
 
 };

@@ -1,17 +1,44 @@
-import { useEffect } from "react";
+// import { NavigationContainer } from "@react-navigation/native";
+// import { StatusBar } from "expo-status-bar";
+// import { useEffect } from "react";
+
+// import RootNavigator from "./src/navigation/RootNavigator";
+
+// import { resetDatabase } from "./src/database/migrations";
+
+// export default function App() {
+//   useEffect(() => {
+//     const initDatabase = async () => {
+//       // await resetDatabase();
+//     };
+
+//     initDatabase();
+//   }, []);
+
+//   return (
+//     <NavigationContainer>
+//       <RootNavigator />
+//       <StatusBar style="auto" />
+//     </NavigationContainer>
+//   );
+// }
+
+
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 
 import RootNavigator from "./src/navigation/RootNavigator";
 
-import { testAll } from "./src/test/testAll";
+import { createTables } from "./src/database/migrations";
 
 export default function App() {
-
   useEffect(() => {
+    const initDatabase = async () => {
+      await createTables();
+    };
 
-    testAll();
-
+    initDatabase();
   }, []);
 
   return (
@@ -20,5 +47,4 @@ export default function App() {
       <StatusBar style="auto" />
     </NavigationContainer>
   );
-
 }

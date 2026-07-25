@@ -1,3 +1,5 @@
+// HALAMAN KELOLA LANGGANAN
+
 import React, { useState, useEffect } from 'react';
 import {
   SafeAreaView,
@@ -9,9 +11,7 @@ import {
   Alert,
   StyleSheet,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const STORAGE_KEY = '@subscriptions';
+import SubscriptionApi from "../../api/SubscriptionApi";
 
 export default function KelolaLanggananScreen({ navigation, route }) {
   const { subscriptionId } = route.params || {};
@@ -27,35 +27,42 @@ export default function KelolaLanggananScreen({ navigation, route }) {
   // Ambil data berdasarkan ID
   useEffect(() => {
     const loadData = async () => {
-      if (!subscriptionId) {
-        Alert.alert('Error', 'Data langganan tidak ditemukan.');
-        navigation.goBack();
-        return;
-      }
 
       try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        const data = stored ? JSON.parse(stored) : [];
-        const subscription = data.find((item) => item.id === subscriptionId);
-        if (subscription) {
-          const priceNumber = subscription.price.replace('Rp ', '');
-          setFormData({
-            name: subscription.name,
-            price: priceNumber,
-            dueDate: subscription.dueDate,
-            category: subscription.category,
-            note: subscription.note || '',
-          });
-        } else {
-          Alert.alert('Error', 'Data tidak ditemukan.');
+
+        if (!subscriptionId) {
+          Alert.alert("Error", "Data tidak ditemukan");
           navigation.goBack();
+          return;
         }
+
+        const subscription =
+          await SubscriptionApi.getById(subscriptionId);
+
+        if (!subscription) {
+          Alert.alert("Error", "Data tidak ditemukan");
+          navigation.goBack();
+          return;
+        }
+
+        setFormData({
+          name: subscription.name,
+          price: subscription.price.toString(),
+          dueDate: subscription.next_payment_date,
+          category: subscription.category,
+          note: "",
+        });
+
       } catch (error) {
-        console.error('Gagal memuat data:', error);
-        Alert.alert('Error', 'Gagal memuat data.');
+
+        console.log(error);
+
       } finally {
+
         setLoading(false);
+
       }
+
     };
 
     loadData();
@@ -63,65 +70,105 @@ export default function KelolaLanggananScreen({ navigation, route }) {
 
   // Update data
   const handleUpdate = async () => {
-    if (!formData.name || !formData.price || !formData.dueDate || !formData.category) {
-      Alert.alert('Peringatan', 'Harap isi semua field yang wajib!');
+
+    if (
+      !formData.name ||
+      !formData.price ||
+      !formData.dueDate ||
+      !formData.category
+    ) {
+      Alert.alert(
+        "Peringatan",
+        "Harap isi semua field."
+      );
       return;
     }
 
     try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      const data = stored ? JSON.parse(stored) : [];
-      const updatedData = data.map((item) => {
-        if (item.id === subscriptionId) {
-          return {
-            ...item,
-            name: formData.name,
-            price: `Rp ${formData.price}`,
-            dueDate: formData.dueDate,
-            category: formData.category,
-            note: formData.note,
-          };
-        }
-        return item;
-      });
 
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-      Alert.alert('Berhasil', 'Data langganan berhasil diperbarui!', [
-        { text: 'OK', onPress: () => navigation.goBack() },
-      ]);
+      const subscription =
+        await SubscriptionApi.getById(subscriptionId);
+
+      subscription.name = formData.name;
+      subscription.price = Number(formData.price);
+      subscription.category = formData.category;
+      subscription.next_payment_date = formData.dueDate;
+
+      await SubscriptionApi.update(subscription);
+
+      Alert.alert(
+        "Berhasil",
+        "Data berhasil diperbarui.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.goBack(),
+          },
+        ]
+      );
+
     } catch (error) {
-      console.error('Gagal update:', error);
-      Alert.alert('Error', 'Gagal menyimpan perubahan.');
+
+      console.log(error);
+
+      Alert.alert(
+        "Error",
+        "Gagal memperbarui data."
+      );
+
     }
+
   };
 
   // Hapus data
   const handleDelete = () => {
+
     Alert.alert(
-      'Hapus Langganan',
-      'Apakah Anda yakin ingin menghapus langganan ini?',
+      "Hapus Langganan",
+      "Yakin ingin menghapus?",
       [
-        { text: 'Batal', style: 'cancel' },
         {
-          text: 'Hapus',
-          style: 'destructive',
+          text: "Batal",
+          style: "cancel",
+        },
+        {
+          text: "Hapus",
+          style: "destructive",
+
           onPress: async () => {
+
             try {
-              const stored = await AsyncStorage.getItem(STORAGE_KEY);
-              const data = stored ? JSON.parse(stored) : [];
-              const filtered = data.filter((item) => item.id !== subscriptionId);
-              await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(filtered));
-              Alert.alert('Berhasil', 'Langganan dihapus.', [
-                { text: 'OK', onPress: () => navigation.goBack() },
-              ]);
+
+              await SubscriptionApi.delete(subscriptionId);
+
+              Alert.alert(
+                "Berhasil",
+                "Langganan berhasil dihapus.",
+                [
+                  {
+                    text: "OK",
+                    onPress: () => navigation.goBack(),
+                  },
+                ]
+              );
+
             } catch (error) {
-              console.error('Gagal hapus:', error);
-              Alert.alert('Error', 'Gagal menghapus data.');
+
+              console.log(error);
+
+              Alert.alert(
+                "Error",
+                "Gagal menghapus data."
+              );
+
             }
+
           },
+
         },
       ]
     );
+
   };
 
   if (loading) {
