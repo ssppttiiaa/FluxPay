@@ -1,4 +1,4 @@
-// CARD TAGIHAN MENDATNAG YANG ADA DI HALAMAN DASBOARD
+// CARD TAGIHAN MENDATANG YANG ADA DI HALAMAN DASBOARD
 
 import React from 'react';
 import {
@@ -15,6 +15,7 @@ import { radius } from '../../constants/radius';
 import { shadows } from '../../constants/shadows';
 
 export default function UpcomingPaymentCard({
+    logo,
     service = 'Netflix Premium',
     dueDate = '28 Oktober 2026',
     amount = 'Rp186.000',
@@ -26,8 +27,11 @@ export default function UpcomingPaymentCard({
             <View style={styles.left}>
 
                 <View style={styles.icon}>
-                    <CustomText variant="h3">
-                        🎬
+                    <CustomText 
+                        variant="h3" 
+                        style={styles.iconText}
+                    >
+                        {logo || '🎬'}
                     </CustomText>
                 </View>
 
@@ -109,6 +113,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
 
         marginRight: spacing.md,
+    },
+
+    iconText: {
+        textAlign: 'center',
+        textAlignVertical: 'center',
+        includeFontPadding: false,
+        fontSize: 24,
+        lineHeight: 24,
     },
 
     info: {

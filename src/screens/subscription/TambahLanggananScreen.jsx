@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import {
-  SafeAreaView,
   ScrollView,
   View,
   Text,
@@ -13,10 +12,13 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-
 import { Picker } from "@react-native-picker/picker";
+import { SafeAreaView } from "react-native-safe-area-context";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import { colors } from "../../constants/colors";
+import { spacing } from "../../constants/spacing";
+import ExportHeader from "../../components/organisms/ExportHeader";
 
 import SubscriptionApi from "../../api/SubscriptionApi";
 import SubscriptionModel from "../../models/SubscriptionModel";
@@ -29,23 +31,34 @@ export default function TambahLanggananScreen({ navigation }) {
     category: "",
     note: "",
   });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState(new Date());
 
   const categories = ["HIBURAN", "TOOLS", "KERJA", "PRODUKTIVITAS"];
 
-  const handleSave = async () => {
-    // if (
-    //   !formData.name ||
-    //   !formData.price ||
-    //   !formData.dueDate ||
-    //   !formData.category
-    // ) {
-    //   Alert.alert(
-    //     "Peringatan",
-    //     "Harap isi semua field yang wajib!"
-    //   );
-    //   return;
-    // }
+  // Handle perubahan tanggal dari picker
+  const onDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || tempDate;
+    setShowDatePicker(Platform.OS === 'ios');
+    setTempDate(currentDate);
+    if (event.type === 'set') {
+      // Format tanggal menjadi YYYY-MM-DD
+      const year = currentDate.getFullYear();
+      const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+      const day = String(currentDate.getDate()).padStart(2, '0');
+      const formattedDate = `${year}-${month}-${day}`;
+      setFormData({ ...formData, dueDate: formattedDate });
+    }
+  };
 
+  // Handle perubahan harga, hanya angka
+  const handlePriceChange = (text) => {
+    // Hanya izinkan angka
+    const numericText = text.replace(/[^0-9]/g, '');
+    setFormData({ ...formData, price: numericText });
+  };
+
+  const handleSave = async () => {
     console.log("===== HANDLE SAVE DIJALANKAN =====");
 
     if (
@@ -66,23 +79,14 @@ export default function TambahLanggananScreen({ navigation }) {
 
       const subscription = new SubscriptionModel({
         user_id: 1,
-
         name: formData.name,
-
         price: parseInt(formData.price),
-
         category: formData.category,
-
         billing_cycle: "Monthly",
-
         start_date: today,
-
         next_payment_date: formData.dueDate,
-
         reminder_days: 2,
-
         status: "active",
-
         created_at: new Date().toISOString(),
       });
 
@@ -115,20 +119,7 @@ export default function TambahLanggananScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Text style={styles.backButtonText}>←</Text>
-        </TouchableOpacity>
-
-        <View style={styles.headerContent}>
-          <Text style={styles.title}>Tambah Langganan</Text>
-        </View>
-      </View>
-
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -139,75 +130,70 @@ export default function TambahLanggananScreen({ navigation }) {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.content}
         >
+          <ExportHeader navigation={navigation} title="Tambah Langganan" />
+
           <Text style={styles.subtitle}>
             Masukkan detail pembayaran rutin Anda
           </Text>
 
           <View style={styles.formContainer}>
+            {/* NAMA LAYANAN */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>NAMA LAYANAN</Text>
-
               <TextInput
                 style={styles.input}
                 placeholder="Contoh: Netflix"
                 value={formData.name}
                 onChangeText={(text) =>
-                  setFormData({
-                    ...formData,
-                    name: text,
-                  })
+                  setFormData({ ...formData, name: text })
                 }
               />
             </View>
 
+            {/* HARGA BULANAN - hanya angka */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>HARGA BULANAN</Text>
-
               <TextInput
                 style={styles.input}
                 placeholder="50000"
                 keyboardType="numeric"
                 value={formData.price}
-                onChangeText={(text) =>
-                  setFormData({
-                    ...formData,
-                    price: text,
-                  })
-                }
+                onChangeText={handlePriceChange}
               />
             </View>
 
+            {/* TANGGAL PEMBAYARAN - date picker */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>TANGGAL PEMBAYARAN</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="2026-07-20"
-                value={formData.dueDate}
-                onChangeText={(text) =>
-                  setFormData({
-                    ...formData,
-                    dueDate: text,
-                  })
-                }
-              />
+              <TouchableOpacity
+                style={styles.dateInput}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <Text style={[styles.dateText, !formData.dueDate && styles.placeholderText]}>
+                  {formData.dueDate || "Pilih Tanggal"}
+                </Text>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={tempDate}
+                  mode="date"
+                  display="default"
+                  onChange={onDateChange}
+                />
+              )}
             </View>
 
+            {/* KATEGORI */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>KATEGORI</Text>
-
               <View style={styles.pickerContainer}>
                 <Picker
                   selectedValue={formData.category}
                   onValueChange={(value) =>
-                    setFormData({
-                      ...formData,
-                      category: value,
-                    })
+                    setFormData({ ...formData, category: value })
                   }
                 >
                   <Picker.Item label="Pilih Kategori" value="" />
-
                   {categories.map((item) => (
                     <Picker.Item key={item} label={item} value={item} />
                   ))}
@@ -215,9 +201,9 @@ export default function TambahLanggananScreen({ navigation }) {
               </View>
             </View>
 
+            {/* CATATAN */}
             <View style={styles.inputGroup}>
               <Text style={styles.label}>CATATAN</Text>
-
               <TextInput
                 style={[styles.input, styles.textArea]}
                 placeholder="Catatan tambahan..."
@@ -225,10 +211,7 @@ export default function TambahLanggananScreen({ navigation }) {
                 numberOfLines={4}
                 value={formData.note}
                 onChangeText={(text) =>
-                  setFormData({
-                    ...formData,
-                    note: text,
-                  })
+                  setFormData({ ...formData, note: text })
                 }
               />
             </View>
@@ -237,7 +220,6 @@ export default function TambahLanggananScreen({ navigation }) {
               <View style={styles.infoIcon}>
                 <Text style={styles.infoIconText}>i</Text>
               </View>
-
               <Text style={styles.reminderText}>
                 FluxPay akan mengingatkan Anda 2 hari sebelum tanggal
                 pembayaran.
@@ -260,42 +242,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background,
   },
 
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-
-  backButton: {
-    width: 40,
-    height: 40,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 12,
-  },
-
-  backButtonText: {
-    fontSize: 28,
-    color: "#FFFFFF",
-    fontWeight: "bold",
-  },
-
-  headerContent: {
-    flex: 1,
-  },
-
-  title: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#FFFFFF",
-  },
-
   content: {
-    paddingHorizontal: 16,
-    paddingVertical: 20,
-    paddingBottom: 30,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: 60,
   },
 
   subtitle: {
@@ -340,6 +290,25 @@ const styles = StyleSheet.create({
     height: 100,
     textAlignVertical: "top",
     paddingTop: 12,
+  },
+
+  dateInput: {
+    height: 48,
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#FAFBFC",
+    justifyContent: "center",
+  },
+
+  dateText: {
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+
+  placeholderText: {
+    color: colors.textSecondary,
   },
 
   reminderRow: {

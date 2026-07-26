@@ -27,6 +27,17 @@ export default function BerandaScreen({ navigation }) {
   const [totalMonthly, setTotalMonthly] = useState(0);
   const [totalSubscription, setTotalSubscription] = useState(0);
 
+  // Fungsi pemetaan kategori ke ikon (sama dengan di LanggananScreen)
+  const getLogoByCategory = (category) => {
+    const iconMap = {
+      'HIBURAN': '🎬',
+      'TOOLS': '🔧',
+      'KERJA': '💼',
+      'PRODUKTIVITAS': '📈',
+    };
+    return iconMap[category] || '📦';
+  };
+
   const loadData = async () => {
     try {
       console.log("LOAD 1");
@@ -60,10 +71,6 @@ export default function BerandaScreen({ navigation }) {
     }
   };
 
-  // const loadData = async () => {
-  //   console.log("===== LOAD DATA BERANDA =====");
-  // };
-
   useFocusEffect(
     useCallback(() => {
       loadData();
@@ -91,6 +98,7 @@ export default function BerandaScreen({ navigation }) {
 
         {upcoming.length > 0 && (
           <UpcomingPaymentCard
+            logo={getLogoByCategory(upcoming[0].category)}  // <-- tambahkan logo
             service={upcoming[0].name}
             dueDate={upcoming[0].next_payment_date}
             amount={`Rp${Number(upcoming[0].price).toLocaleString("id-ID")}`}
@@ -104,7 +112,7 @@ export default function BerandaScreen({ navigation }) {
         {subscriptions.slice(0, 3).map((item) => (
           <SubscriptionCard
             key={item.id}
-            logo="📦"
+            logo={getLogoByCategory(item.category)}
             name={item.name}
             category={item.category}
             dueDate={item.next_payment_date}
@@ -116,12 +124,6 @@ export default function BerandaScreen({ navigation }) {
       <FloatingActionButton
         onPress={() => navigation.navigate("TambahLangganan")}
       />
-    </SafeAreaView>
-  );
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <CustomText>TES BERHASIL</CustomText>
     </SafeAreaView>
   );
 }

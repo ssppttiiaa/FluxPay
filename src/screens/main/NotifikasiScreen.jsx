@@ -16,65 +16,30 @@ import ReminderAPI from "../../api/ReminderApi";
 
 import { colors } from '../../constants/colors';
 import { spacing } from '../../constants/spacing';
+import { radius } from '../../constants/radius';
 
 export default function NotifikasiScreen() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-
-  const loadNotifications = async () => {
-    try {
-
-      setLoading(true);
-
-      const reminders = await ReminderAPI.getReminders();
-      const expired = await ReminderAPI.getExpired();
-
-      const notif = [];
-
-      reminders.forEach(item => {
-
-        notif.push({
-          id: item.id,
-          category: "LANGGANAN",
-          time: `${item.days} hari lagi`,
-          title: item.message,
-        });
-
-      });
-
-      expired.forEach(item => {
-
-        notif.push({
-          id: `expired-${item.id}`,
-          category: "PENGINGAT",
-          time: "Jatuh Tempo",
-          title: `${item.name} telah jatuh tempo.`,
-        });
-
-      });
-
-      setNotifications(notif);
-
-    } catch (error) {
-
-      console.log(error);
-
-    } finally {
-
-      setLoading(false);
-
+  // Fungsi untuk mendapatkan ikon berdasarkan kategori notifikasi
+  const getNotificationIcon = (category) => {
+    switch (category) {
+      case 'LANGGANAN':
+        return '📋';
+      case 'PENGINGAT':
+        return '⏰';
+      case 'SEHASIL':
+        return '💰';
+      case 'INFO':
+        return 'ℹ️';
+      default:
+        return '📌';
     }
   };
 
-  useFocusEffect(
-    useCallback(() => {
-      loadNotifications();
-    }, [])
-  );
-
-  // Fungsi untuk mendapatkan warna kategori
-  const getCategoryColor = (category) => {
+  // Fungsi untuk mendapatkan warna latar belakang ikon
+  const getIconBackgroundColor = (category) => {
     switch (category) {
       case 'LANGGANAN':
         return '#4A90E2';
@@ -88,6 +53,47 @@ export default function NotifikasiScreen() {
         return '#999';
     }
   };
+
+  const loadNotifications = async () => {
+    try {
+      setLoading(true);
+
+      const reminders = await ReminderAPI.getReminders();
+      const expired = await ReminderAPI.getExpired();
+
+      const notif = [];
+
+      reminders.forEach(item => {
+        notif.push({
+          id: item.id,
+          category: "LANGGANAN",
+          time: `${item.days} hari lagi`,
+          title: item.message,
+        });
+      });
+
+      expired.forEach(item => {
+        notif.push({
+          id: `expired-${item.id}`,
+          category: "PENGINGAT",
+          time: "Jatuh Tempo",
+          title: `${item.name} telah jatuh tempo.`,
+        });
+      });
+
+      setNotifications(notif);
+    } catch (error) {
+      console.log(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      loadNotifications();
+    }, [])
+  );
 
   if (loading) {
     return (
@@ -123,20 +129,23 @@ export default function NotifikasiScreen() {
           notifications.map((item) => (
             <View key={item.id} style={styles.card}>
               <View style={styles.cardRow}>
+                {/* Lingkaran ikon */}
                 <View
                   style={[
-                    styles.categoryIndicator,
-                    { backgroundColor: getCategoryColor(item.category) },
+                    styles.iconContainer,
+                    { backgroundColor: getIconBackgroundColor(item.category) + '20' }, // transparan
                   ]}
-                />
+                >
+                  <Text style={styles.iconText}>
+                    {getNotificationIcon(item.category)}
+                  </Text>
+                </View>
+
                 <View style={styles.cardContent}>
                   <Text style={styles.categoryText}>{item.category}</Text>
-                  <Text style={styles.timeText}>
-                    {item.time}
-                  </Text>
+                  <Text style={styles.timeText}>{item.time}</Text>
                   <Text style={styles.titleText}>{item.title}</Text>
                 </View>
-                <Text style={styles.actionIcon}>-</Text>
               </View>
             </View>
           ))
@@ -191,11 +200,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  categoryIndicator: {
-    width: 4,
-    height: 40,
-    borderRadius: 2,
+  iconContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.md || 12,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
+    backgroundColor: '#F0F0F0',
+  },
+  iconText: {
+    fontSize: 22,
   },
   cardContent: {
     flex: 1,
@@ -217,11 +232,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#222',
     marginTop: 4,
-  },
-  actionIcon: {
-    fontSize: 18,
-    color: '#ccc',
-    marginLeft: 8,
   },
   emptyContainer: {
     marginTop: 40,

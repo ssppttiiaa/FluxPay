@@ -1,6 +1,5 @@
 // HALAMAN LANGGANAN
 
-
 import React, { useState, useCallback } from "react";
 import {
   StyleSheet,
@@ -31,24 +30,24 @@ export default function LanggananScreen({ navigation }) {
   const [subscriptions, setSubscriptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fungsi pemetaan kategori ke ikon (emoji)
+  const getLogoByCategory = (category) => {
+    const iconMap = {
+      'HIBURAN': '🎬',
+      'TOOLS': '🔧',
+      'KERJA': '💼',
+      'PRODUKTIVITAS': '📈',
+    };
+    return iconMap[category] || '📦'; // default jika tidak dikenali
+  };
+
   const loadSubscriptions = async () => {
     try {
       setLoading(true);
-
-      // const data = await SubscriptionApi.getAll();
-
-      // console.log("===== GET ALL =====");
-      // console.log(data);
-
-      // setSubscriptions(data);
-
       const data = await SubscriptionApi.getAll();
-
       console.log("===== GET ALL =====");
       console.log(JSON.stringify(data, null, 2));
-
       setSubscriptions(data || []);
-
     } catch (error) {
       console.log(error);
     } finally {
@@ -117,7 +116,6 @@ export default function LanggananScreen({ navigation }) {
         ) : filteredData.length === 0 ? (
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>Belum ada langganan</Text>
-
             <Text style={styles.emptySubText}>
               Tambahkan langganan dengan tombol +
             </Text>
@@ -126,7 +124,7 @@ export default function LanggananScreen({ navigation }) {
           filteredData.map((item) => (
             <SubscriptionListCard
               key={item.id}
-              logo="📦"
+              logo={getLogoByCategory(item.category)} // <-- ikon sesuai kategori
               name={item.name}
               category={item.category}
               dueDate={item.next_payment_date}
