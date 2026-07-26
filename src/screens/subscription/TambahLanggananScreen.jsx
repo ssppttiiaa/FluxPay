@@ -22,6 +22,7 @@ import ExportHeader from "../../components/organisms/ExportHeader";
 
 import SubscriptionApi from "../../api/SubscriptionApi";
 import SubscriptionModel from "../../models/SubscriptionModel";
+import LocalNotificationService from "../../services/LocalNotificationService";
 
 export default function TambahLanggananScreen({ navigation }) {
   const [formData, setFormData] = useState({
@@ -91,7 +92,14 @@ export default function TambahLanggananScreen({ navigation }) {
       });
 
       console.log("Sebelum create");
-      await SubscriptionApi.create(subscription);
+      const insertedId =
+        await SubscriptionApi.create(subscription);
+
+      subscription.id = insertedId;
+
+      await LocalNotificationService.scheduleSubscriptionReminders(
+        subscription
+      );
       console.log("Sesudah create");
 
       setFormData({
@@ -221,8 +229,7 @@ export default function TambahLanggananScreen({ navigation }) {
                 <Text style={styles.infoIconText}>i</Text>
               </View>
               <Text style={styles.reminderText}>
-                FluxPay akan mengingatkan Anda 2 hari sebelum tanggal
-                pembayaran.
+                FluxPay akan mengingatkan Anda 7, 3, dan 1 hari sebelum tanggal pembayaran.
               </Text>
             </View>
           </View>
